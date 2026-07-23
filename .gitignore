@@ -1,1 +1,27 @@
 .claude/settings.local.json
+
+# Jupyter
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Hugging Face caches and checkpoints
+.cache/
+models/ner_model/checkpoint-*/
+models/ner_model/runs/
+
+# External datasets cloned from other repositories
+data/external/
+
+# Large generated model files
+*.safetensors
+*.pt
+*.pth
+
+# Environment and secrets
+.env
+.venv/
+venv/

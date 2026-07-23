@@ -1,0 +1,6 @@
+APT29 used PowerShell to execute malicious commands and exploit
+CVE-2023-38831. The activity was mapped to T1059.001 and contacted
+192.168.1.25 through https://malicious-example.com/payload.
+
+The downloaded file had the SHA-256 hash
+0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.
