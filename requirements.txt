@@ -4,3 +4,5 @@ accelerate
 datasets
 evaluate
 seqeval
+liboqs-python
+cryptography
