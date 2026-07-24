@@ -1,92 +1,98 @@
+"""
+ML-based severity classification for threat reports.
+
+This replaces the earlier rule-based if/elif scoring baseline
+(see notebooks/05_rule_based_classification_baseline.ipynb, kept only for
+historical comparison) with predictions from a trained scikit-learn model
+(see src/train_classifier.py). Every severity label and confidence score
+returned here comes from the model's learned decision function, not from
+hand-written thresholds.
+"""
+import sys
+from pathlib import Path
 from typing import Any
+
+import joblib
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+import config
+import feature_engineering
+
+_MODEL_CACHE: dict[str, Any] | None = None
+
+
+def _load_model() -> dict[str, Any]:
+    global _MODEL_CACHE
+
+    if _MODEL_CACHE is not None:
+        return _MODEL_CACHE
+
+    if not Path(config.SEVERITY_MODEL_FILE).exists():
+        raise FileNotFoundError(
+            "No trained severity classifier found at "
+            f"{config.SEVERITY_MODEL_FILE}. Run src/train_classifier.py "
+            "first."
+        )
+
+    _MODEL_CACHE = joblib.load(config.SEVERITY_MODEL_FILE)
+    return _MODEL_CACHE
 
 
 def classify_severity(
-    features: dict[str, float],
     text: str,
+    entities: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
-    Classify report severity using an explainable rule-based baseline.
+    Predict report severity using the trained ML classifier.
 
-    This is not a trained machine-learning model.
+    Parameters
+    ----------
+    text : str
+        The (cleaned) report text.
+    entities : dict, optional
+        The merged entity report produced by src/entity_merger.py. Used to
+        derive additional model-predicted-entity-count features.
+
+    Returns
+    -------
+    dict
+        severity, confidence, per-class probabilities, top contributing
+        features (for explainability) and the method used.
     """
-
-    if not isinstance(features, dict):
-        raise TypeError("features must be a dictionary")
-
     if not isinstance(text, str):
         raise TypeError("text must be a string")
 
-    score = 0
-    reasons: list[str] = []
+    bundle = _load_model()
+    model = bundle["model"]
+    labels = bundle["labels"]
 
-    cve_count = features.get("cve_count", 0.0)
-    threat_actor_count = features.get("threat_actor_count", 0.0)
-    malware_count = features.get("malware_count", 0.0)
-    technique_count = features.get("technique_count", 0.0)
-    indicator_count = features.get("indicator_count", 0.0)
-    high_risk_term_count = features.get("high_risk_term_count", 0.0)
+    features = feature_engineering.vectorize(text, entities)
 
-    if cve_count > 0:
-        score += 2
-        reasons.append(
-            f"{int(cve_count)} CVE identifier(s) detected"
-        )
+    prediction = model.predict(features)[0]
+    probabilities = model.predict_proba(features)[0]
 
-    if threat_actor_count > 0:
-        score += 2
-        reasons.append(
-            f"{int(threat_actor_count)} known threat actor(s) detected"
-        )
+    class_probabilities = {
+        str(label): round(float(prob), 4)
+        for label, prob in zip(model.classes_, probabilities)
+    }
 
-    if malware_count > 0:
-        score += 2
-        reasons.append(
-            f"{int(malware_count)} known malware entity/entities detected"
-        )
+    confidence = max(class_probabilities.values())
 
-    if technique_count > 0:
-        score += 1
-        reasons.append(
-            f"{int(technique_count)} MITRE ATT&CK technique(s) detected"
-        )
-
-    if indicator_count >= 3:
-        score += 2
-        reasons.append(
-            f"{int(indicator_count)} technical indicators detected"
-        )
-    elif indicator_count > 0:
-        score += 1
-        reasons.append(
-            f"{int(indicator_count)} technical indicator(s) detected"
-        )
-
-    if high_risk_term_count >= 3:
-        score += 4
-        reasons.append(
-            f"{int(high_risk_term_count)} high-risk terms detected"
-        )
-    elif high_risk_term_count > 0:
-        score += 2
-        reasons.append(
-            f"{int(high_risk_term_count)} high-risk term(s) detected"
-        )
-
-    if score >= 9:
-        severity = "Critical"
-    elif score >= 6:
-        severity = "High"
-    elif score >= 3:
-        severity = "Medium"
-    else:
-        severity = "Low"
+    top_features = feature_engineering.create_features(text, entities, top_k=5)
+    reasons = [
+        f"top contributing signal: {name} (weight={weight})"
+        for name, weight in top_features.items()
+        if weight > 0
+    ][:5]
 
     return {
-        "severity": severity,
-        "score": score,
-        "reasons": reasons or [
-            "No significant threat indicators detected"
-        ],
-        "method": "rule-based severity baseline",
+        "severity": str(prediction),
+        "confidence": round(float(confidence), 4),
+        "class_probabilities": class_probabilities,
+        "reasons": reasons or ["model found no strong contributing signals"],
+        "method": "ml-model:random-forest-tfidf",
+        "labels": labels,
     }

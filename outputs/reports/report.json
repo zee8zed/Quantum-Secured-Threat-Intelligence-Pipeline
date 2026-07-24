@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-24T05:21:10.416716+00:00",
+  "source_path": "../data/raw/sample_reports/testing/report_001.txt",
+  "report_text": "APT29 used PowerShell to execute malicious commands and exploit\nCVE-2023-38831. The activity was mapped to T1059.001 and contacted\n192.168.1.25 through https://malicious-example.com/payload.\n\nThe downloaded file had the SHA-256 hash\n0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.",
+  "cleaned_text": "APT29 used PowerShell to execute malicious commands and exploit CVE-2023-38831. The activity was mapped to T1059.001 and contacted 192.168.1.25 through https://malicious-example.com/payload. The downloaded file had the SHA-256 hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.",
+  "entities": {
+    "merged_entities": [
+      {
+        "text": "PowerShell",
+        "label": "Malware",
+        "score": 0.8645,
+        "start": 10,
+        "end": 21,
+        "source": "transformer"
+      },
+      {
+        "text": "execute malicious commands",
+        "label": "Indicator",
+        "score": 0.7234,
+        "start": 24,
+        "end": 51,
+        "source": "transformer"
+      },
+      {
+        "text": "exploit",
+        "label": "Indicator",
+        "score": 0.6701,
+        "start": 55,
+        "end": 63,
+        "source": "transformer"
+      },
+      {
+        "text": "CVE-2023-38831.",
+        "label": "Vulnerability",
+        "score": 0.7685,
+        "start": 63,
+        "end": 79,
+        "source": "transformer"
+      },
+      {
+        "text": "192.168.1.25",
+        "label": "Indicator",
+        "score": 1.0,
+        "start": 130,
+        "end": 143,
+        "source": "transformer"
+      },
+      {
+        "text": "https://malicious-example.com/payload.",
+        "label": "Indicator",
+        "score": 0.9986,
+        "start": 151,
+        "end": 190,
+        "source": "transformer"
+      },
+      {
+        "text": "downloaded file",
+        "label": "Indicator",
+        "score": 0.7168,
+        "start": 194,
+        "end": 210,
+        "source": "transformer"
+      },
+      {
+        "text": "the SHA-256 hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.",
+        "label": "Indicator",
+        "score": 0.9522,
+        "start": 214,
+        "end": 297,
+        "source": "transformer"
+      }
+    ],
+    "entities_by_label": {
+      "Malware": [
+        {
+          "text": "PowerShell",
+          "label": "Malware",
+          "score": 0.8645,
+          "start": 10,
+          "end": 21,
+          "source": "transformer"
+        }
+      ],
+      "Indicator": [
+        {
+          "text": "execute malicious commands",
+          "label": "Indicator",
+          "score": 0.7234,
+          "start": 24,
+          "end": 51,
+          "source": "transformer"
+        },
+        {
+          "text": "exploit",
+          "label": "Indicator",
+          "score": 0.6701,
+          "start": 55,
+          "end": 63,
+          "source": "transformer"
+        },
+        {
+          "text": "192.168.1.25",
+          "label": "Indicator",
+          "score": 1.0,
+          "start": 130,
+          "end": 143,
+          "source": "transformer"
+        },
+        {
+          "text": "https://malicious-example.com/payload.",
+          "label": "Indicator",
+          "score": 0.9986,
+          "start": 151,
+          "end": 190,
+          "source": "transformer"
+        },
+        {
+          "text": "downloaded file",
+          "label": "Indicator",
+          "score": 0.7168,
+          "start": 194,
+          "end": 210,
+          "source": "transformer"
+        },
+        {
+          "text": "the SHA-256 hash 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef.",
+          "label": "Indicator",
+          "score": 0.9522,
+          "start": 214,
+          "end": 297,
+          "source": "transformer"
+        }
+      ],
+      "Vulnerability": [
+        {
+          "text": "CVE-2023-38831.",
+          "label": "Vulnerability",
+          "score": 0.7685,
+          "start": 63,
+          "end": 79,
+          "source": "transformer"
+        }
+      ]
+    },
+    "entity_count": 8,
+    "source": "transformer-ner"
+  },
+  "classification": {
+    "severity": "Low",
+    "confidence": 0.399,
+    "class_probabilities": {
+      "Critical": 0.1805,
+      "High": 0.1453,
+      "Low": 0.399,
+      "Medium": 0.2752
+    },
+    "reasons": [
+      "top contributing signal: tfidf::cve (weight=0.299971)",
+      "top contributing signal: tfidf::malicious commands (weight=0.295157)",
+      "top contributing signal: tfidf::downloaded (weight=0.290762)",
+      "top contributing signal: tfidf::https (weight=0.276231)",
+      "top contributing signal: tfidf::hash (weight=0.270281)"
+    ],
+    "method": "ml-model:random-forest-tfidf",
+    "labels": [
+      "Low",
+      "Medium",
+      "High",
+      "Critical"
+    ]
+  }
+}
